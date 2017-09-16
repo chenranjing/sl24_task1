@@ -4,28 +4,29 @@
 import pandas as pd
 
 # Read data
-train = pd.read_csv('train.csv')
+file = 'train.csv'
+data = pd.read_csv(file)
 
 # Convert MsSubClass from float to object
-train['MSSubClass'] = train['MSSubClass'].astype(object)
+data['MSSubClass'] = data['MSSubClass'].astype(object)
 
 # Convert MoSold from integer to object
-train['MoSold'] = train['MoSold'].astype(object)
+data['MoSold'] = data['MoSold'].astype(object)
 
 # Houses with no lot frontage, value is set to 0
-train.loc[train['LotFrontage'].isnull(), 'LotFrontage'] = 0
+data.loc[data['LotFrontage'].isnull(), 'LotFrontage'] = 0
 
 # Houses with missing values for MasVnrType assumed equal to None; area equal 0
-train.loc[train['MasVnrType'].isnull(), 'MasVnrArea'] = 0
-train.loc[train['MasVnrType'].isnull(), 'MasVnrType'] = 'None'
+data.loc[data['MasVnrType'].isnull(), 'MasVnrArea'] = 0
+data.loc[data['MasVnrType'].isnull(), 'MasVnrType'] = 'None'
 
 # Convert all nominal variables to dummy variables (either 0 or 1)
-train['CentralAir'] = (train['CentralAir'] == 'Y').astype(int)
+data['CentralAir'] = (data['CentralAir'] == 'Y').astype(int)
 nominal = ['MSSubClass', 'MSZoning', 'Street', 'Alley', 'LandContour', 'LotConfig', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType', 'HouseStyle', 'RoofStyle', 'RoofMatl', 'Exterior1st', 'Exterior2nd', 'MasVnrType', 'Foundation', 'Heating', 'GarageType', 'MiscFeature', 'SaleType', 'MoSold']
-dummies = pd.get_dummies(train[nominal])
+dummies = pd.get_dummies(data[nominal])
 
-# Join dummy variables to training set and remove original columns
-train = train.join(dummies).drop(nominal, axis = 1)
+# Join dummy variables to dataing set and remove original columns
+data = data.join(dummies).drop(nominal, axis = 1)
 
 # Define function to recode ordinal variables into integers
 def recode_ordinal(data, colName, levels):
@@ -40,32 +41,32 @@ def recode_ordinal(data, colName, levels):
     data[colName] = data[colName].astype(int) # convert column to integer
 
 # Recode ordinals
-recode_ordinal(train, 'LotShape', ['IR3', 'IR2', 'IR1', 'Reg'])
-recode_ordinal(train, 'Utilities', ['ELO', 'NoSewa', 'NoSewr', 'AllPub'])
-recode_ordinal(train, 'LandSlope', ['Sev', 'Mod', 'Gtl'])
-recode_ordinal(train, 'ExterQual', ['Po', 'Fa', 'TA', 'Gd', 'Ex'])
-recode_ordinal(train, 'ExterCond', ['Po', 'Fa', 'TA', 'Gd', 'Ex'])
-train.loc[train['BsmtQual'].isnull(), 'BsmtQual'] = 0
-recode_ordinal(train, 'BsmtQual', ['Po', 'Fa', 'TA', 'Gd', 'Ex'])
-train.loc[train['BsmtCond'].isnull(), 'BsmtCond'] = 0
-recode_ordinal(train, 'BsmtCond', ['Po', 'Fa', 'TA', 'Gd', 'Ex'])
-train.loc[train['BsmtExposure'].isnull(), 'BsmtExposure'] = 0
-recode_ordinal(train, 'BsmtExposure', ['No', 'Mn', 'Av', 'Gd'])
-train.loc[train['BsmtFinType1'].isnull(), 'BsmtFinType1'] = 0
-recode_ordinal(train, 'BsmtFinType1', ['Unf', 'LwQ', 'Rec', 'BLQ', 'ALQ', 'GLQ'])
-train.loc[train['BsmtFinType2'].isnull(), 'BsmtFinType2'] = 0
-recode_ordinal(train, 'BsmtFinType2', ['Unf', 'LwQ', 'Rec', 'BLQ', 'ALQ', 'GLQ'])
+recode_ordinal(data, 'LotShape', ['IR3', 'IR2', 'IR1', 'Reg'])
+recode_ordinal(data, 'Utilities', ['ELO', 'NoSewa', 'NoSewr', 'AllPub'])
+recode_ordinal(data, 'LandSlope', ['Sev', 'Mod', 'Gtl'])
+recode_ordinal(data, 'ExterQual', ['Po', 'Fa', 'TA', 'Gd', 'Ex'])
+recode_ordinal(data, 'ExterCond', ['Po', 'Fa', 'TA', 'Gd', 'Ex'])
+data.loc[data['BsmtQual'].isnull(), 'BsmtQual'] = 0
+recode_ordinal(data, 'BsmtQual', ['Po', 'Fa', 'TA', 'Gd', 'Ex'])
+data.loc[data['BsmtCond'].isnull(), 'BsmtCond'] = 0
+recode_ordinal(data, 'BsmtCond', ['Po', 'Fa', 'TA', 'Gd', 'Ex'])
+data.loc[data['BsmtExposure'].isnull(), 'BsmtExposure'] = 0
+recode_ordinal(data, 'BsmtExposure', ['No', 'Mn', 'Av', 'Gd'])
+data.loc[data['BsmtFinType1'].isnull(), 'BsmtFinType1'] = 0
+recode_ordinal(data, 'BsmtFinType1', ['Unf', 'LwQ', 'Rec', 'BLQ', 'ALQ', 'GLQ'])
+data.loc[data['BsmtFinType2'].isnull(), 'BsmtFinType2'] = 0
+recode_ordinal(data, 'BsmtFinType2', ['Unf', 'LwQ', 'Rec', 'BLQ', 'ALQ', 'GLQ'])
 
 # credit to Zhehao Zhang for all lines below
 #get the age of House
-train['Age_House'] = train ['YrSold'] - train ['YearBuilt']
-#whether a house had been reconstructed  
-train ['Reconstructed'] = train ['YearRemod/Add'] - train ['YearBuilt']
-# 1- the house had been reconstructed, otherwise 0 
-train.loc[train ['Reconstructed'] > 0, 'Reconstructed'] = 1 
- 
+data['Age_House'] = data ['YrSold'] - data ['YearBuilt']
+#whether a house had been reconstructed
+data ['Reconstructed'] = data ['YearRemod/Add'] - data ['YearBuilt']
+# 1- the house had been reconstructed, otherwise 0
+data.loc[data ['Reconstructed'] > 0, 'Reconstructed'] = 1
+
 #get the age of Garage
-train ['Age_Garage'] = train ['YrSold'] - train ['GarageYrBlt']
+data ['Age_Garage'] = data ['YrSold'] - data ['GarageYrBlt']
 
 ####oridnal data
 def recode_ordinal (data, colName, levels):
@@ -75,34 +76,34 @@ def recode_ordinal (data, colName, levels):
           i = i + 1
      data[colName] = data [colName].astype(int)
   # HeatingQC
-recode_ordinal (train, 'HeatingQC', ['Po','Fa','TA','Gd','Ex'])   
+recode_ordinal (data, 'HeatingQC', ['Po','Fa','TA','Gd','Ex'])
  #Electrical
-recode_ordinal (train, 'Electrical', ['Mix','FuseP','FuseF','FuseA','SBrkr'])
+recode_ordinal (data, 'Electrical', ['Mix','FuseP','FuseF','FuseA','SBrkr'])
  #KitchenQual
-recode_ordinal (train,'KitchenQual', ['Po','Fa','TA','Gd','Ex'])
+recode_ordinal (data,'KitchenQual', ['Po','Fa','TA','Gd','Ex'])
  #Functional
-recode_ordinal (train, 'Functional' , ['Sal','Sev','Maj2','Maj1','Mod','Min2','Min1','Typ'])
+recode_ordinal (data, 'Functional' , ['Sal','Sev','Maj2','Maj1','Mod','Min2','Min1','Typ'])
  #FireplaceQu
-train.loc[train ['FireplaceQu'].isnull(), 'FireplaceQu'] = 0
-recode_ordinal(train,'FireplaceQu', ['Po','Fa','TA','Gd','Ex'])
+data.loc[data ['FireplaceQu'].isnull(), 'FireplaceQu'] = 0
+recode_ordinal(data,'FireplaceQu', ['Po','Fa','TA','Gd','Ex'])
  #Garage Finish
-train.loc[train ['GarageFinish'].isnull(), 'GarageFinish'] = 0
-recode_ordinal (train,'GarageFinish',['Unf','RFn','Fin'])
+data.loc[data ['GarageFinish'].isnull(), 'GarageFinish'] = 0
+recode_ordinal (data,'GarageFinish',['Unf','RFn','Fin'])
  #Garage Qual
-train.loc[train ['GarageQual'].isnull(), 'GarageQual'] = 0
-recode_ordinal(train,'GarageQual',['Po','Fa','TA','Gd','Ex'])
+data.loc[data ['GarageQual'].isnull(), 'GarageQual'] = 0
+recode_ordinal(data,'GarageQual',['Po','Fa','TA','Gd','Ex'])
  #Garage Cond
-train.loc[train ['GarageCond'].isnull(), 'GarageCond'] = 0
-recode_ordinal(train,'GarageCond', ['Po','Fa','TA','Gd','Ex'])
- 
+data.loc[data ['GarageCond'].isnull(), 'GarageCond'] = 0
+recode_ordinal(data,'GarageCond', ['Po','Fa','TA','Gd','Ex'])
+
  #Paved Drive
-recode_ordinal(train,'PavedDrive', ['N','P','Y'])
+recode_ordinal(data,'PavedDrive', ['N','P','Y'])
  #Pool QC
-train.loc[train ['PoolQC'].isnull(), 'PoolQC'] = 0
-recode_ordinal(train,'PoolQC', ['Fa','TA','Gd','Ex'])
+data.loc[data ['PoolQC'].isnull(), 'PoolQC'] = 0
+recode_ordinal(data,'PoolQC', ['Fa','TA','Gd','Ex'])
  #Fence
-train.loc[train ['Fence'].isnull(), 'Fence'] = 0
-recode_ordinal(train,'Fence', ['MnWw','GdWo','MnPrv','GdPrv'])
+data.loc[data ['Fence'].isnull(), 'Fence'] = 0
+recode_ordinal(data,'Fence', ['MnWw','GdWo','MnPrv','GdPrv'])
 
 #drop  YearRemod/Add,YearBuilt,GarageYrBlt
-train.drop (['YearRemod/Add','YearBuilt','GarageYrBlt'],axis=1)
+data.drop (['YearRemod/Add','YearBuilt','GarageYrBlt'],axis=1)
