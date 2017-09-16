@@ -106,4 +106,4 @@ data.loc[data ['Fence'].isnull(), 'Fence'] = 0
 recode_ordinal(data,'Fence', ['MnWw','GdWo','MnPrv','GdPrv'])
 
 #drop  YearRemod/Add,YearBuilt,GarageYrBlt
-data.drop (['YearRemod/Add','YearBuilt','GarageYrBlt'],axis=1)
+data = data.drop(['YearRemod/Add','YearBuilt','GarageYrBlt'],axis=1)
