@@ -7,6 +7,16 @@ import pandas as pd
 file = 'train.csv'
 data = pd.read_csv(file)
 
+# Drop variables with considerable number of missing values
+data = data.drop(['PoolQC', 'MiscFeature', 'Alley', 'Fence', 'FireplaceQu'], 
+                 axis = 1)
+
+# Drop variables with majority zeros
+data = data.drop(['PoolArea', '3SsnPorch', 'ScreenPorch', 'EnclosedPorch', 'BsmtFullBath', 'BsmtHalfBath'], axis = 1)
+
+# Delete MiscVal due to large number of zeros and its relation to MiscFeature
+data = data.drop('MiscVal', axis = 1)
+
 # Convert MsSubClass from float to object
 data['MSSubClass'] = data['MSSubClass'].astype(object)
 
@@ -22,7 +32,7 @@ data.loc[data['MasVnrType'].isnull(), 'MasVnrType'] = 'None'
 
 # Convert all nominal variables to dummy variables (either 0 or 1)
 data['CentralAir'] = (data['CentralAir'] == 'Y').astype(int)
-nominal = ['MSSubClass', 'MSZoning', 'Street', 'Alley', 'LandContour', 'LotConfig', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType', 'HouseStyle', 'RoofStyle', 'RoofMatl', 'Exterior1st', 'Exterior2nd', 'MasVnrType', 'Foundation', 'Heating', 'GarageType', 'MiscFeature', 'SaleType', 'MoSold']
+nominal = ['MSSubClass', 'MSZoning', 'Street', 'LandContour', 'LotConfig', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType', 'HouseStyle', 'RoofStyle', 'RoofMatl', 'Exterior1st', 'Exterior2nd', 'MasVnrType', 'Foundation', 'Heating', 'GarageType', 'SaleType', 'MoSold']
 dummies = pd.get_dummies(data[nominal])
 
 # Join dummy variables to dataing set and remove original columns
@@ -68,42 +78,31 @@ data.loc[data ['Reconstructed'] > 0, 'Reconstructed'] = 1
 #get the age of Garage
 data ['Age_Garage'] = data ['YrSold'] - data ['GarageYrBlt']
 
-####oridnal data
-def recode_ordinal (data, colName, levels):
-     i = 1
-     for lvl in levels:
-          data.loc[data[colName] == lvl, colName] = i
-          i = i + 1
-     data[colName] = data [colName].astype(int)
-  # HeatingQC
+# HeatingQC
 recode_ordinal (data, 'HeatingQC', ['Po','Fa','TA','Gd','Ex'])
- #Electrical
+#Electrical
+data.loc[data ['Electrical'].isnull(), 'Electrical'] = 0
 recode_ordinal (data, 'Electrical', ['Mix','FuseP','FuseF','FuseA','SBrkr'])
- #KitchenQual
+#KitchenQual
 recode_ordinal (data,'KitchenQual', ['Po','Fa','TA','Gd','Ex'])
- #Functional
-recode_ordinal (data, 'Functional' , ['Sal','Sev','Maj2','Maj1','Mod','Min2','Min1','Typ'])
- #FireplaceQu
-data.loc[data ['FireplaceQu'].isnull(), 'FireplaceQu'] = 0
-recode_ordinal(data,'FireplaceQu', ['Po','Fa','TA','Gd','Ex'])
- #Garage Finish
+#Functional
+recode_ordinal (data, 'Functional' ,
+                ['Sal','Sev','Maj2','Maj1','Mod','Min2','Min1','Typ'])
+#Garage Finish
 data.loc[data ['GarageFinish'].isnull(), 'GarageFinish'] = 0
 recode_ordinal (data,'GarageFinish',['Unf','RFn','Fin'])
- #Garage Qual
+#Garage Qual
 data.loc[data ['GarageQual'].isnull(), 'GarageQual'] = 0
 recode_ordinal(data,'GarageQual',['Po','Fa','TA','Gd','Ex'])
- #Garage Cond
+#Garage Cond
 data.loc[data ['GarageCond'].isnull(), 'GarageCond'] = 0
 recode_ordinal(data,'GarageCond', ['Po','Fa','TA','Gd','Ex'])
-
- #Paved Drive
+#Paved Drive
 recode_ordinal(data,'PavedDrive', ['N','P','Y'])
- #Pool QC
-data.loc[data ['PoolQC'].isnull(), 'PoolQC'] = 0
-recode_ordinal(data,'PoolQC', ['Fa','TA','Gd','Ex'])
- #Fence
-data.loc[data ['Fence'].isnull(), 'Fence'] = 0
-recode_ordinal(data,'Fence', ['MnWw','GdWo','MnPrv','GdPrv'])
 
-#drop  YearRemod/Add,YearBuilt,GarageYrBlt
+
+# drop YearRemod/Add,YearBuilt,GarageYrBlt
 data = data.drop(['YearRemod/Add','YearBuilt','GarageYrBlt'],axis=1)
+
+# write to csv file
+data.to_csv('train1.csv', index = False)
